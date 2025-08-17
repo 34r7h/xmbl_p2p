@@ -1,0 +1,33 @@
+# This is a mock WASM file for testing compute task submission
+# In a real implementation, this would be a compiled WebAssembly module
+
+# Mock WASM header
+00 61 73 6d 01 00 00 00
+
+# Mock function section
+01 07 01 60 01 7f 01 7f
+
+# Mock export section
+07 01 01 6d 61 69 6e 00 00
+
+# Mock code section
+0a 04 01 02 00 0b
+
+# Mock data section
+0b 01 00 41 00 0b 04 68 65 6c 6c 6f
+
+# This mock WASM file simulates:
+# - File upload for compute tasks
+# - Task submission with input data
+# - Execution progress tracking
+# - Result generation and display
+
+# The functional client should:
+# - Accept this WASM file upload
+# - Allow JSON input data entry
+# - Submit the compute task
+# - Show execution progress
+# - Display completion results
+# - Allow result download
+
+# This demonstrates the complete P2P compute workflow from task submission to result retrieval.

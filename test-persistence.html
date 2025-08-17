@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test localStorage Persistence</title>
+</head>
+<body>
+    <h1>Test localStorage Persistence</h1>
+    
+    <input type="file" id="testFile">
+    <button onclick="testUpload()">Test Upload</button>
+    <button onclick="checkStorage()">Check Storage</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        const STORAGE_KEY = 'xmbl_stored_files';
+        let storedFiles = [];
+        
+        // Load persisted data on page load
+        window.addEventListener('load', function() {
+            loadPersistedData();
+            updateOutput();
+        });
+        
+        function loadPersistedData() {
+            try {
+                const savedFiles = localStorage.getItem(STORAGE_KEY);
+                if (savedFiles) {
+                    storedFiles = JSON.parse(savedFiles);
+                    console.log('Loaded files from localStorage:', storedFiles);
+                }
+            } catch (error) {
+                console.error('Failed to load persisted data:', error);
+            }
+        }
+        
+        function savePersistedData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(storedFiles));
+                console.log('Saved files to localStorage:', storedFiles);
+            } catch (error) {
+                console.error('Failed to save persisted data:', error);
+            }
+        }
+        
+        function testUpload() {
+            const fileInput = document.getElementById('testFile');
+            if (!fileInput.files[0]) {
+                alert('Please select a file first');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const fileInfo = {
+                id: Date.now().toString(),
+                name: file.name,
+                size: file.size,
+                timestamp: new Date().toISOString(),
+                status: 'stored'
+            };
+            
+            storedFiles.unshift(fileInfo);
+            savePersistedData();
+            updateOutput();
+            
+            alert(`File "${file.name}" added to storage. Check localStorage and refresh the page to test persistence.`);
+        }
+        
+        function checkStorage() {
+            const savedFiles = localStorage.getItem(STORAGE_KEY);
+            alert(`localStorage content: ${savedFiles || 'empty'}`);
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem(STORAGE_KEY);
+            storedFiles = [];
+            updateOutput();
+            alert('Storage cleared');
+        }
+        
+        function updateOutput() {
+            const output = document.getElementById('output');
+            output.innerHTML = `
+                <h3>Current Files in Memory:</h3>
+                <pre>${JSON.stringify(storedFiles, null, 2)}</pre>
+                <h3>localStorage Content:</h3>
+                <pre>${localStorage.getItem(STORAGE_KEY) || 'empty'}</pre>
+            `;
+        }
+    </script>
+</body>
+</html>

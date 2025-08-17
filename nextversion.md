@@ -1,0 +1,32 @@
+- **Core Logic (Shared WASM Program):**
+  - **Language:** Rust – Chosen for its safety, performance, and excellent support for compiling to WASM. The entire essential logic for networking, storage, compute, resource allocation, function requests, validation (return value + hash), sharding, redundancy management, heartbeats, and basic crypto operations (for xmbl.c payments and xmbl.t identity/wallets) is implemented here.
+  - **Compilation Target:** wasm32-wasi – Enables portability with system interfaces for file I/O, networking, and randomness without custom bindings.
+  - **WASM Runtime Integration:** The core uses `wasmi` (a pure-Rust WASM interpreter that compiles to WASM) for executing user-provided WASM functions. This supports nested execution (core WASM running user WASM) and sandboxing. User functions can export interfaces for multi-party computation, with the core handling orchestration (e.g., distributing inputs, collecting outputs/hashes via P2P).
+  - **Key Libraries:**
+    - **Networking:** `libp2p-rs` – For P2P discovery (Kademlia DHT), peer management, and secure communication (Noise protocol for encryption). Configured to work with WASI sockets for TCP/UDP. Heartbeats are implemented as periodic DHT puts/announces.
+    - **Storage:** Custom sharding with `reed-solomon-erasure` for redundancy (e.g., 3-of-5 erasure coding). Local storage via WASI filesystem APIs; nodes track shards in a local SQLite DB (via `rusqlite`, compiled for WASM).
+    - **Compute & Validation:** User functions loaded as WASM modules via `wasmi`. For execution, one node computes and returns the value; a validator node (selected via DHT) computes and sends a hash (e.g., using `sha2`). Supports MPC via function-defined rounds (e.g., using ` threshold_crypto` or simple secret sharing in Rust).
+    - **Crypto & Economy:** `ring` or `rust-crypto` for signatures, hashes, and key management. For xmbl.t (tokens) and xmbl.c (coins), implement a simple ledger with merkle proofs for balances/transfers, settled via P2P micropayments or batched to a sidechain (if needed, integrate with `substrate-primitives` for basic blockchain-like state). No full consensus assumed; use reputation/scores for dispute resolution.
+    - **Other:** `tokio-wasi` (for async tasks), `serde` for serialization, `rand` for randomness.
+- **Host Layer (Thin Wrappers for Platforms):**
+  - **Language:** Rust – Shared host library that embeds `wasmtime` (fast JIT WASM runtime with WASI support) to load and execute the core WASM module. The host provides configuration (e.g., resource allocation, prices via CLI/UI inputs), maps directories for storage (–dir flag in Wasmtime), enables networking (–allow-tcp, –allow-udp), and exposes a simple API for app interactions (e.g., start_node(), request_storage(), run_function()).
+  - **Why Shared Host?** Minimizes duplication; the host lib is a single Rust crate used across all platforms. It handles WASM instantiation and error handling, keeping platform-specific code minimal.
+- **Platform-Specific Apps (Extremely Lightweight):**
+  - **CLI (Command-Line):**
+    - Built as a Rust binary using the shared host lib.
+    - UI/Interaction: `clap` for parsing commands (e.g., `app set-resources --cpu 4 --storage 10GB --price 0.01`, `app request-compute --function func.wasm`).
+    - Packaging: Cargo build for Linux/Mac/Windows. No UI overhead; runs as a daemon or one-off commands.
+  - **Desktop (Windows/Mac/Linux):**
+    - UI Framework: Flutter – Cross-platform, lightweight (apps ~10-50MB), with Dart for UI and FFI to call the shared Rust host lib (via `flutter_rust_bridge` for seamless bindings).
+    - Features: Simple GUI for setting resources/prices, monitoring heartbeats, requesting storage/compute, wallet management. Flutter handles desktop deployment.
+    - Why Flutter? Shares the same UI codebase with mobile, minimizing separate desktop/mobile code.
+  - **Mobile (iOS/Android):**
+    - UI Framework: Flutter – Same Dart UI codebase as desktop, with FFI to the Rust host lib. Supports native compilation for lightweight apps (~20-50MB APK/IPA).
+    - Features: Identical to desktop GUI, plus mobile-specific like background service for node running (using Flutter plugins for daemon mode).
+    - Integration: Rust compiled to native libs (via cargo-ndk for Android, cargo-lipo for iOS) and bundled.
+- **Additional Considerations:**
+  - **Minimizing Codebases:** One core WASM (Rust), one shared Rust host crate, one Flutter project (for mobile/desktop UI), one small Rust CLI binary. No duplicate logic for essentials; platform differences are only in UI bindings and packaging.
+  - **Lightweight Design:** Apps focus on loading the WASM and providing user input/output; no heavy dependencies. Total app sizes kept low by avoiding web/JS layers.
+  - **Security & Performance:** WASM sandboxing ensures safe execution. Wasmtime’s JIT provides near-native speed. For MPC, functions can use secure channels via libp2p.
+  - **Development Flow:** Build core WASM once, distribute it (e.g., via network or bundled). Apps load it dynamically or statically.
+  - **Potential Extensions:** If consensus for xmbl.c needs full blockchain, integrate `substrate-lite` in the core for lightweight state machine. For testing, use `wasm-bindgen-test` in Rust.

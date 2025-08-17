@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug localStorage Test</h1>
+    
+    <button onclick="testLocalStorage()">Test localStorage</button>
+    <button onclick="testFileUpload()">Test File Upload</button>
+    <button onclick="checkStorage()">Check Storage</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        function testLocalStorage() {
+            try {
+                localStorage.setItem('test', 'hello world');
+                const result = localStorage.getItem('test');
+                document.getElementById('output').innerHTML = `localStorage test: ${result}`;
+                console.log('localStorage test successful:', result);
+            } catch (error) {
+                console.error('localStorage test failed:', error);
+                document.getElementById('output').innerHTML = `localStorage test failed: ${error.message}`;
+            }
+        }
+        
+        function testFileUpload() {
+            try {
+                // Create a mock file
+                const mockFile = {
+                    name: 'test.txt',
+                    size: 1024,
+                    type: 'text/plain'
+                };
+                
+                // Simulate file storage
+                const fileInfo = {
+                    id: Date.now().toString(),
+                    name: mockFile.name,
+                    size: mockFile.size,
+                    timestamp: new Date().toISOString(),
+                    status: 'stored'
+                };
+                
+                // Save to localStorage
+                const existingFiles = JSON.parse(localStorage.getItem('xmbl_stored_files') || '[]');
+                existingFiles.unshift(fileInfo);
+                localStorage.setItem('xmbl_stored_files', JSON.stringify(existingFiles));
+                
+                document.getElementById('output').innerHTML = `File uploaded: ${mockFile.name}`;
+                console.log('File upload test successful:', fileInfo);
+            } catch (error) {
+                console.error('File upload test failed:', error);
+                document.getElementById('output').innerHTML = `File upload test failed: ${error.message}`;
+            }
+        }
+        
+        function checkStorage() {
+            try {
+                const files = localStorage.getItem('xmbl_stored_files');
+                const parsed = files ? JSON.parse(files) : [];
+                document.getElementById('output').innerHTML = `Storage contains ${parsed.length} files: ${JSON.stringify(parsed, null, 2)}`;
+                console.log('Storage check successful:', parsed);
+            } catch (error) {
+                console.error('Storage check failed:', error);
+                document.getElementById('output').innerHTML = `Storage check failed: ${error.message}`;
+            }
+        }
+        
+        // Auto-run test on load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, testing localStorage...');
+            testLocalStorage();
+        });
+    </script>
+</body>
+</html>
