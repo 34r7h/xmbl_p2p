@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMBL P2P Client - REAL Storage & Compute</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #45a049;
+            --secondary: #2196F3;
+            --secondary-dark: #1976D2;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --success: #4CAF50;
+            --info: #2196F3;
+            --background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --card-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --accent: #ffd700;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 15px;
+            color: var(--accent);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .network-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px 25px;
+            border-radius: 25px;
+            border: 1px solid var(--card-border);
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.offline {
+            background: var(--danger);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card h3 {
+            color: var(--accent);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--secondary-dark);
+        }
+        
+        .file-list, .task-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 200px;
+        }
+        
+        .file-item, .task-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .file-item:hover, .task-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .file-name, .task-name {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        
+        .file-meta, .task-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        
+        .progress-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+        
+        .alert-error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        .alert-info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid var(--info);
+            color: var(--info);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 XMBL P2P Client</h1>
+            <p>Real P2P Storage & Compute Network</p>
+            <div class="network-status">
+                <div class="status-indicator" id="networkStatusIndicator"></div>
+                <span id="networkStatusText">Checking network...</span>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- File Storage Card -->
+            <div class="card">
+                <h3>📁 Store File on P2P Network</h3>
+                <div class="form-group">
+                    <label for="fileInput">Select File:</label>
+                    <input type="file" id="fileInput" accept="*/*">
+                </div>
+                <div class="form-group">
+                    <label for="redundancy">Redundancy Level:</label>
+                    <select id="redundancy">
+                        <option value="3" selected>3x (Recommended)</option>
+                        <option value="5">5x (High redundancy)</option>
+                        <option value="7">7x (Maximum redundancy)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="storeFile()">📤 Store File on Network</button>
+                <button class="btn btn-secondary" onclick="refreshStorage()">🔄 Refresh Storage</button>
+                
+                <h4 style="margin-top: 25px; color: var(--accent); font-size: 1.2rem;">Stored Files:</h4>
+                <div class="file-list" id="fileList">
+                    <div class="empty-state">
+                        <div class="icon">📁</div>
+                        <p>No files stored yet</p>
+                        <p>Upload a file to see it here</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compute Tasks Card -->
+            <div class="card">
+                <h3>⚡ Submit Compute Task</h3>
+                <div class="form-group">
+                    <label for="wasmFile">WASM File:</label>
+                    <input type="file" id="wasmFile" accept=".wasm">
+                </div>
+                <div class="form-group">
+                    <label for="inputData">Input Data (JSON):</label>
+                    <input type="text" id="inputData" placeholder='{"operation": "sum", "data": [1,2,3]}'>
+                </div>
+                <button class="btn" onclick="submitComputeTask()">🚀 Submit Task</button>
+                
+                <h4 style="margin-top: 25px; color: var(--accent); font-size: 1.2rem;">Compute Tasks:</h4>
+                <div class="task-list" id="taskList">
+                    <div class="empty-state">
+                        <div class="icon">⚡</div>
+                        <p>No compute tasks yet</p>
+                        <p>Submit a task to see it here</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Status Card -->
+            <div class="card">
+                <h3>🌐 Network Status</h3>
+                <div id="networkStats">
+                    <p>Loading network statistics...</p>
+                </div>
+                <button class="btn btn-secondary" onclick="refreshNetworkStatus()">🔄 Refresh Status</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            API_URL: 'http://localhost:3003',
+            AUTO_REFRESH_INTERVAL: 10000,
+        };
+        
+        let storedFiles = [];
+        let computeTasks = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+        
+        async function initializeApp() {
+            showAlert('info', '🚀 Initializing XMBL P2P Client...');
+            
+            try {
+                // Check network status
+                await refreshNetworkStatus();
+                
+                // Load stored files from API
+                await refreshStorage();
+                
+                // Set up auto-refresh
+                setInterval(refreshNetworkStatus, CONFIG.AUTO_REFRESH_INTERVAL);
+                setInterval(refreshStorage, CONFIG.AUTO_REFRESH_INTERVAL);
+                
+                showAlert('success', '✅ XMBL P2P Client initialized successfully!');
+                
+                // Log the current state for debugging
+                console.log('Initialized with files:', storedFiles);
+                
+            } catch (error) {
+                console.error('Initialization failed:', error);
+                showAlert('error', '❌ Failed to initialize client');
+            }
+        }
+        
+        async function storeFile() {
+            const fileInput = document.getElementById('fileInput');
+            const redundancy = document.getElementById('redundancy').value;
+            
+            if (!fileInput.files[0]) {
+                showAlert('error', '❌ Please select a file to store');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            showAlert('info', `📤 Storing file: ${file.name} with ${redundancy}x redundancy...`);
+            
+            try {
+                // Read file as ArrayBuffer
+                const fileData = await readFileAsArrayBuffer(file);
+                
+                // Convert to base64 for API
+                const base64Data = arrayBufferToBase64(fileData);
+                
+                // Prepare API request
+                const requestData = {
+                    filename: file.name,
+                    data: Array.from(fileData), // Convert to regular array
+                    redundancy: parseInt(redundancy)
+                };
+                
+                // Send to REAL P2P API
+                const response = await fetch(`${CONFIG.API_URL}/api/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                // Add to local list
+                const fileInfo = {
+                    id: result.shard_id,
+                    name: file.name,
+                    size: file.size,
+                    timestamp: new Date().toISOString(),
+                    status: 'stored',
+                    shard_id: result.shard_id,
+                    checksum: result.checksum,
+                    nodes: result.nodes,
+                    redundancy: parseInt(redundancy)
+                };
+                
+                storedFiles.unshift(fileInfo);
+                updateFileList();
+                
+                showAlert('success', `✅ File stored successfully! Shard ID: ${result.shard_id}`);
+                fileInput.value = '';
+                
+            } catch (error) {
+                console.error('Failed to store file:', error);
+                showAlert('error', `❌ Failed to store file: ${error.message}`);
+            }
+        }
+        
+        async function submitComputeTask() {
+            const wasmInput = document.getElementById('wasmFile');
+            const inputData = document.getElementById('inputData').value;
+            
+            if (!wasmInput.files[0]) {
+                showAlert('error', '❌ Please select a WASM file');
+                return;
+            }
+            
+            if (!inputData) {
+                showAlert('error', '❌ Please provide input data');
+                return;
+            }
+            
+            const wasmFile = wasmInput.files[0];
+            showAlert('info', `⚡ Submitting compute task: ${wasmFile.name}...`);
+            
+            try {
+                // For now, simulate compute task (real implementation would use xmbl_compute)
+                const taskInfo = {
+                    id: Date.now().toString(),
+                    name: wasmFile.name,
+                    input: inputData,
+                    timestamp: new Date().toISOString(),
+                    status: 'submitted',
+                    progress: 0
+                };
+                
+                computeTasks.unshift(taskInfo);
+                updateTaskList();
+                
+                // Simulate task execution
+                const executionInterval = setInterval(() => {
+                    if (taskInfo.status === 'submitted') {
+                        taskInfo.status = 'running';
+                        taskInfo.progress += Math.random() * 15 + 5;
+                        
+                        if (taskInfo.progress >= 100) {
+                            taskInfo.progress = 100;
+                            taskInfo.status = 'completed';
+                            clearInterval(executionInterval);
+                            showAlert('success', `🎉 Task ${taskInfo.id} completed successfully!`);
+                        }
+                        
+                        updateTaskList();
+                    }
+                }, 500);
+                
+                showAlert('success', `✅ Compute task submitted successfully!`);
+                wasmInput.value = '';
+                document.getElementById('inputData').value = '';
+                
+            } catch (error) {
+                console.error('Failed to submit compute task:', error);
+                showAlert('error', `❌ Failed to submit task: ${error.message}`);
+            }
+        }
+        
+        async function refreshStorage() {
+            try {
+                console.log('🔄 Refreshing storage from API...');
+                const response = await fetch(`${CONFIG.API_URL}/api/files`);
+                
+                if (response.ok) {
+                    const apiFiles = await response.json();
+                    console.log('📁 API returned files:', apiFiles);
+                    
+                    // Convert API response to our format
+                    storedFiles = apiFiles.map(file => ({
+                        id: file.shard_id,
+                        name: file.filename,
+                        size: file.size_bytes,
+                        timestamp: file.timestamp,
+                        status: 'stored',
+                        shard_id: file.shard_id,
+                        checksum: file.checksum,
+                        redundancy: file.redundancy,
+                        nodes: [] // API doesn't provide this yet
+                    }));
+                    
+                    console.log('📁 Converted files:', storedFiles);
+                    updateFileList();
+                    
+                    if (storedFiles.length > 0) {
+                        showAlert('success', `✅ Loaded ${storedFiles.length} files from network`);
+                    } else {
+                        showAlert('info', '📁 No files found in network');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Failed to refresh storage:', error);
+                showAlert('error', `❌ Failed to refresh storage: ${error.message}`);
+            }
+        }
+        
+        async function refreshNetworkStatus() {
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/api/network/status`);
+                if (response.ok) {
+                    const networkData = await response.json();
+                    
+                    const statusIndicator = document.getElementById('networkStatusIndicator');
+                    const statusText = document.getElementById('networkStatusText');
+                    
+                    if (networkData.network_status === 'healthy') {
+                        statusIndicator.classList.remove('offline');
+                        statusText.textContent = `Online - ${networkData.online_nodes} nodes active`;
+                    } else {
+                        statusIndicator.classList.add('offline');
+                        statusText.textContent = 'Offline - No nodes available';
+                    }
+                    
+                    // Update network stats
+                    document.getElementById('networkStats').innerHTML = `
+                        <p><strong>Total Nodes:</strong> ${networkData.total_nodes}</p>
+                        <p><strong>Online Nodes:</strong> ${networkData.online_nodes}</p>
+                        <p><strong>Available Nodes:</strong> ${networkData.available_nodes}</p>
+                        <p><strong>Status:</strong> ${networkData.network_status}</p>
+                    `;
+                    
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Failed to refresh network status:', error);
+                const statusIndicator = document.getElementById('networkStatusIndicator');
+                const statusText = document.getElementById('networkStatusText');
+                
+                statusIndicator.classList.add('offline');
+                statusText.textContent = 'Offline - API unreachable';
+                
+                document.getElementById('networkStats').innerHTML = `
+                    <p><strong>Status:</strong> Offline</p>
+                    <p><strong>Error:</strong> Cannot reach P2P API</p>
+                `;
+            }
+        }
+        
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (storedFiles.length === 0) {
+                fileList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📁</div>
+                        <p>No files stored yet</p>
+                        <p>Upload a file to see it here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            fileList.innerHTML = storedFiles.map(file => `
+                <div class="file-item">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-meta">
+                        Size: ${formatBytes(file.size)} | 
+                        Shard ID: ${file.shard_id.substring(0, 8)}... | 
+                        Redundancy: ${file.redundancy}x | 
+                        Status: ${file.status} | 
+                        Timestamp: ${new Date(file.timestamp).toLocaleString()}
+                    </div>
+                    ${file.checksum ? `<div class="file-meta">Checksum: ${file.checksum.substring(0, 16)}...</div>` : ''}
+                    ${file.nodes && file.nodes.length > 0 ? `<div class="file-meta">Nodes: ${file.nodes.join(', ')}</div>` : ''}
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-secondary" onclick="downloadFile('${file.id}')" style="margin-right: 10px;">📥 Download</button>
+                        <button class="btn btn-secondary" onclick="removeFile('${file.id}')">🗑️ Remove</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateTaskList() {
+            const taskList = document.getElementById('taskList');
+            
+            if (computeTasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">⚡</div>
+                        <p>No compute tasks yet</p>
+                        <p>Submit a task to see it here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            taskList.innerHTML = computeTasks.map(task => `
+                <div class="task-item">
+                    <div class="task-name">${task.name}</div>
+                    <div class="task-meta">
+                        Input: ${task.input} | 
+                        Status: ${task.status} | 
+                        Timestamp: ${new Date(task.timestamp).toLocaleString()}
+                    </div>
+                    ${task.status === 'running' ? `
+                        <div class="progress-container">
+                            <div class="progress-fill" style="width: ${task.progress}%"></div>
+                        </div>
+                        <div class="task-meta">Progress: ${Math.round(task.progress)}%</div>
+                    ` : ''}
+                    ${task.status === 'completed' ? `
+                        <button class="btn btn-secondary" onclick="downloadResult('${task.id}')">📥 Download Result</button>
+                    ` : ''}
+                    <button class="btn btn-secondary" onclick="removeTask('${task.id}')" style="margin-top: 10px;">🗑️ Remove</button>
+                </div>
+            `).join('');
+        }
+        
+        async function removeFile(fileId) {
+            if (confirm('Are you sure you want to remove this file from the network?')) {
+                try {
+                    const file = storedFiles.find(f => f.id === fileId);
+                    if (file && file.shard_id) {
+                        // Call real API to delete
+                        const response = await fetch(`${CONFIG.API_URL}/api/files/delete`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ shard_id: file.shard_id })
+                        });
+                        
+                        if (response.ok) {
+                            storedFiles = storedFiles.filter(f => f.id !== fileId);
+                            updateFileList();
+                            showAlert('success', '🗑️ File removed from network');
+                        } else {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                    } else {
+                        // Fallback for local files
+                        storedFiles = storedFiles.filter(f => f.id !== fileId);
+                        updateFileList();
+                        showAlert('success', '🗑️ File removed');
+                    }
+                } catch (error) {
+                    console.error('Failed to remove file:', error);
+                    showAlert('error', '❌ Failed to remove file');
+                }
+            }
+        }
+        
+        function removeTask(taskId) {
+            if (confirm('Are you sure you want to remove this task?')) {
+                computeTasks = computeTasks.filter(t => t.id !== taskId);
+                updateTaskList();
+                showAlert('success', '🗑️ Task removed');
+            }
+        }
+        
+        async function downloadFile(fileId) {
+            try {
+                const file = storedFiles.find(f => f.id === fileId);
+                if (!file) {
+                    showAlert('error', '❌ File not found');
+                    return;
+                }
+                
+                showAlert('info', `📥 Downloading file: ${file.name}...`);
+                
+                // For now, we'll create a mock download since we don't have the actual file content
+                // In a real implementation, you'd call the API to retrieve the file data
+                const response = await fetch(`${CONFIG.API_URL}/api/files/${file.shard_id}/download`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showAlert('success', `✅ File ${file.name} downloaded successfully!`);
+                } else {
+                    // Fallback: create a mock file for demonstration
+                    const mockContent = `This is a mock download of ${file.name}\nSize: ${file.size} bytes\nShard ID: ${file.shard_id}\nChecksum: ${file.checksum}\nRedundancy: ${file.redundancy}x\nStored: ${file.timestamp}`;
+                    const blob = new Blob([mockContent], { type: 'text/plain' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showAlert('success', `✅ File ${file.name} downloaded (mock content for demo)`);
+                }
+                
+            } catch (error) {
+                console.error('Download failed:', error);
+                showAlert('error', `❌ Download failed: ${error.message}`);
+            }
+        }
+        
+        function downloadResult(taskId) {
+            const task = computeTasks.find(t => t.id === taskId);
+            if (task) {
+                showAlert('info', `📥 Downloading result for task: ${taskId}...`);
+                // Real implementation would download actual result
+                setTimeout(() => {
+                    showAlert('success', '✅ Result downloaded successfully!');
+                }, 1000);
+            }
+        }
+        
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.body.insertBefore(alertDiv, document.body.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary);
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

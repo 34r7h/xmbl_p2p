@@ -1,0 +1,35 @@
+[workspace]
+members = [
+    "node_identity",
+    "node_profiler", 
+    "network",
+    "storage",
+    "compute",
+    "blockchain",
+    "contracts",
+    "cli",
+    "simulator",
+    "monitoring",
+    "p2p-node",
+    "p2p-proxy"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["XMBL Team"]
+description = "P2P Storage and Compute Network"
+license = "MIT"
+
+[workspace.dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+hex = "0.4"
+log = "0.4"
+env_logger = "0.10"
+anyhow = "1.0"
+thiserror = "1.1"
+clap = { version = "4.0", features = ["derive"] }
+rand = "0.8"

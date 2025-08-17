@@ -1,0 +1,613 @@
+/* XMBL P2P Network Dashboard - Modern Responsive Styling */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #4CAF50;
+  --primary-dark: #45a049;
+  --secondary: #2196F3;
+  --secondary-dark: #1976D2;
+  --warning: #FF9800;
+  --danger: #F44336;
+  --success: #4CAF50;
+  --info: #2196F3;
+  --background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  --card-bg: rgba(255, 255, 255, 0.1);
+  --card-border: rgba(255, 255, 255, 0.2);
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --accent: #ffd700;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--background);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Styles */
+.app-header {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  padding: clamp(20px, 4vw, 40px);
+  border-bottom: 1px solid var(--card-border);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.app-header h1 {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  margin-bottom: clamp(10px, 2vw, 20px);
+  color: var(--accent);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-weight: 700;
+}
+
+.system-status {
+  display: flex;
+  justify-content: center;
+  gap: clamp(20px, 4vw, 40px);
+  flex-wrap: wrap;
+  margin-top: clamp(15px, 3vw, 25px);
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: clamp(10px, 2vw, 20px);
+  border-radius: 25px;
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.status-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.status-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.status-value {
+  font-weight: 700;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+}
+
+/* Navigation Styles */
+.app-nav {
+  background: rgba(0, 0, 0, 0.3);
+  padding: clamp(15px, 3vw, 25px);
+  display: flex;
+  justify-content: center;
+  gap: clamp(8px, 2vw, 15px);
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.nav-button {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--card-border);
+  padding: clamp(10px, 2vw, 18px) clamp(20px, 4vw, 32px);
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: clamp(14px, 2.5vw, 16px);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+}
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.nav-button.active {
+  background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+/* Main Content Styles */
+.app-main {
+  flex: 1;
+  padding: clamp(20px, 4vw, 40px);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Dashboard Component Styles */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: clamp(20px, 4vw, 30px);
+  margin-bottom: clamp(25px, 5vw, 40px);
+}
+
+.dashboard-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: clamp(20px, 4vw, 30px);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow);
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.dashboard-card h3 {
+  color: var(--accent);
+  margin-bottom: clamp(15px, 3vw, 25px);
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(10px, 2vw, 15px) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.metric-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.metric-item:last-child {
+  border-bottom: none;
+}
+
+.metric-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.metric-value {
+  font-weight: 700;
+  color: var(--success);
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
+}
+
+/* Progress Bar Styles */
+.progress-container {
+  margin: clamp(12px, 2.5vw, 20px) 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), var(--primary-dark));
+  transition: width 0.5s ease;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Button Styles */
+.btn {
+  background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  padding: clamp(10px, 2vw, 16px) clamp(20px, 4vw, 28px);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: clamp(14px, 2.5vw, 16px);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin: clamp(4px, 1vw, 8px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.btn-secondary {
+  background: linear-gradient(45deg, var(--secondary), var(--secondary-dark));
+}
+
+.btn-warning {
+  background: linear-gradient(45deg, var(--warning), #F57C00);
+}
+
+.btn-danger {
+  background: linear-gradient(45deg, var(--danger), #D32F2F);
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: clamp(15px, 3vw, 25px);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: clamp(6px, 1.5vw, 10px);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: clamp(10px, 2vw, 15px);
+  border: 2px solid var(--card-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  font-size: clamp(13px, 2.5vw, 14px);
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Table Styles */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: clamp(15px, 3vw, 25px) 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.data-table th,
+.data-table td {
+  padding: clamp(10px, 2vw, 15px);
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.data-table th {
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 700;
+  color: var(--accent);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.data-table tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Alert Styles */
+.alert {
+  padding: clamp(15px, 3vw, 20px);
+  margin: clamp(15px, 3vw, 25px) 0;
+  border-radius: 12px;
+  border-left: 5px solid;
+  font-weight: 500;
+  animation: slideIn 0.4s ease;
+  box-shadow: var(--shadow);
+}
+
+.alert.success {
+  background: rgba(76, 175, 80, 0.15);
+  border-left-color: var(--success);
+}
+
+.alert.error {
+  background: rgba(244, 67, 54, 0.15);
+  border-left-color: var(--danger);
+}
+
+.alert.info {
+  background: rgba(33, 150, 243, 0.15);
+  border-left-color: var(--info);
+}
+
+.alert.warning {
+  background: rgba(255, 152, 0, 0.15);
+  border-left-color: var(--warning);
+}
+
+/* Footer Styles */
+.app-footer {
+  background: rgba(0, 0, 0, 0.3);
+  padding: clamp(20px, 4vw, 30px);
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+  backdrop-filter: blur(10px);
+}
+
+.app-footer p {
+  margin-bottom: clamp(12px, 2.5vw, 20px);
+  color: var(--text-secondary);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: clamp(15px, 3vw, 25px);
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: var(--primary);
+  text-decoration: none;
+  padding: clamp(8px, 1.5vw, 12px) clamp(16px, 3vw, 24px);
+  border: 1px solid var(--primary);
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 500;
+}
+
+.footer-links a:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header h1 {
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+  }
+  
+  .system-status {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .status-item {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+  
+  .app-nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .nav-button {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+  
+  .app-main {
+    padding: clamp(15px, 3vw, 25px);
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .dashboard-card {
+    padding: 20px;
+  }
+  
+  .btn {
+    width: 100%;
+    margin: 8px 0;
+    text-align: center;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .footer-links a {
+    width: 100%;
+    max-width: 250px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 15px;
+  }
+  
+  .app-main {
+    padding: 15px;
+  }
+  
+  .dashboard-card {
+    padding: 15px;
+  }
+  
+  .metric-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .data-table {
+    font-size: 0.9rem;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 8px;
+  }
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid var(--accent);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: clamp(15px, 3vw, 25px) auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Status Indicators */
+.status-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-online {
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+.status-offline {
+  background: var(--danger);
+}
+
+.status-busy {
+  background: var(--warning);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Enhanced Card Interactions */
+.dashboard-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.dashboard-card:hover::before {
+  left: 100%;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus Management */
+*:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .app-nav,
+  .app-footer,
+  .btn {
+    display: none;
+  }
+  
+  .dashboard-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}

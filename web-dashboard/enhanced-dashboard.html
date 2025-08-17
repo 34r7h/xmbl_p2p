@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMBL P2P Network Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --info-color: #3b82f6;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .node-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .node-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .node-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .node-id {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .node-address {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .node-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-online {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-offline {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .file-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .file-size {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .file-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-item {
+            font-size: 0.9rem;
+        }
+
+        .meta-label {
+            opacity: 0.7;
+            margin-right: 0.5rem;
+        }
+
+        .task-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .task-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .status-completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-failed {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .refresh-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .refresh-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        .alert-success {
+            background: var(--success-color);
+        }
+
+        .alert-error {
+            background: var(--error-color);
+        }
+
+        .alert-info {
+            background: var(--info-color);
+        }
+
+        .alert-warning {
+            background: var(--warning-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.7;
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 XMBL P2P Network Dashboard</h1>
+        <p>Real-time monitoring of decentralized storage and compute network</p>
+    </div>
+
+    <div class="container">
+        <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh All Data</button>
+        
+        <div class="grid">
+            <!-- Network Status Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🌐</div>
+                    <div class="card-title">Network Status</div>
+                </div>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value" id="totalNodes">0</div>
+                        <div class="status-label">Active Nodes</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="totalStorage">0 GB</div>
+                        <div class="status-label">Total Storage</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="totalCompute">0 TFLOPS</div>
+                        <div class="status-label">Total Compute</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="networkHealth">100%</div>
+                        <div class="status-label">Health</div>
+                    </div>
+                </div>
+                
+                <div class="node-list" id="nodeList">
+                    <div class="empty-state">
+                        <div class="icon">⏳</div>
+                        <p>Loading nodes...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage Distribution Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💾</div>
+                    <div class="card-title">Storage Distribution</div>
+                </div>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value" id="totalFiles">0</div>
+                        <div class="status-label">Files Stored</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="totalShards">0</div>
+                        <div class="status-label">Data Shards</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="avgRedundancy">0x</div>
+                        <div class="status-label">Avg Redundancy</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="storageEfficiency">0%</div>
+                        <div class="status-label">Efficiency</div>
+                    </div>
+                </div>
+                
+                <div id="storageList">
+                    <div class="empty-state">
+                        <div class="icon">📁</div>
+                        <p>No files stored yet</p>
+                        <p>Upload files to see them distributed across nodes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compute Tasks Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Compute Tasks</div>
+                </div>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value" id="totalTasks">0</div>
+                        <div class="status-label">Total Tasks</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="completedTasks">0</div>
+                        <div class="status-label">Completed</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="pendingTasks">0</div>
+                        <div class="status-label">Pending</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="computeUtilization">0%</div>
+                        <div class="status-label">Utilization</div>
+                    </div>
+                </div>
+                
+                <div id="taskList">
+                    <div class="empty-state">
+                        <div class="icon">⚡</div>
+                        <p>No compute tasks yet</p>
+                        <p>Submit WASM tasks to see them executed on peers</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Activity Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Network Activity</div>
+                </div>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-value" id="activeConnections">0</div>
+                        <div class="status-label">Active Connections</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="dataTransferred">0 MB</div>
+                        <div class="status-label">Data Transferred</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="peerDiscovery">0</div>
+                        <div class="status-label">Peer Discovery</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="networkLatency">0ms</div>
+                        <div class="status-label">Avg Latency</div>
+                    </div>
+                </div>
+                
+                <div id="activityLog">
+                    <div class="empty-state">
+                        <div class="icon">📈</div>
+                        <p>Monitoring network activity...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            P2P_NODES: [
+                { id: 'node_001', address: '127.0.0.1:3001', storage: 100, compute: 1 },
+                { id: 'node_002', address: '127.0.0.1:3002', storage: 150, compute: 1.5 },
+                { id: 'node_003', address: '127.0.0.1:3003', storage: 200, compute: 2 },
+                { id: 'node_004', address: '127.0.0.1:3004', storage: 250, compute: 2.5 }
+            ],
+            REFRESH_INTERVAL: 5000
+        };
+
+        // State
+        let networkData = {
+            nodes: [],
+            files: [],
+            tasks: [],
+            activity: []
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            setInterval(refreshAll, CONFIG.REFRESH_INTERVAL);
+        });
+
+        async function initializeDashboard() {
+            showAlert('info', '🚀 Initializing P2P Network Dashboard...');
+            
+            try {
+                await refreshAll();
+                showAlert('success', '✅ Dashboard initialized! Monitoring P2P network in real-time.');
+            } catch (error) {
+                console.error('Dashboard initialization failed:', error);
+                showAlert('error', '❌ Failed to initialize dashboard');
+            }
+        }
+
+        async function refreshAll() {
+            await Promise.all([
+                refreshNetworkStatus(),
+                refreshStorageData(),
+                refreshComputeData(),
+                refreshActivityData()
+            ]);
+        }
+
+        async function refreshNetworkStatus() {
+            try {
+                // Simulate network status check
+                const activeNodes = CONFIG.P2P_NODES.map(node => ({
+                    ...node,
+                    status: Math.random() > 0.1 ? 'online' : 'offline',
+                    lastSeen: Date.now() - Math.random() * 60000,
+                    connections: Math.floor(Math.random() * 10),
+                    storageUsed: Math.random() * node.storage,
+                    computeUsed: Math.random() * node.compute
+                }));
+
+                networkData.nodes = activeNodes;
+                updateNetworkStatus();
+                
+            } catch (error) {
+                console.error('Failed to refresh network status:', error);
+            }
+        }
+
+        async function refreshStorageData() {
+            try {
+                // Simulate storage data
+                const mockFiles = [
+                    {
+                        id: 'file_001',
+                        name: 'document.pdf',
+                        size: 2048576,
+                        shards: 3,
+                        redundancy: 2,
+                        nodes: ['node_001', 'node_002'],
+                        timestamp: Date.now() - 300000
+                    },
+                    {
+                        id: 'file_002',
+                        name: 'image.jpg',
+                        size: 1048576,
+                        shards: 2,
+                        redundancy: 3,
+                        nodes: ['node_003', 'node_004'],
+                        timestamp: Date.now() - 600000
+                    }
+                ];
+
+                networkData.files = mockFiles;
+                updateStorageDisplay();
+                
+            } catch (error) {
+                console.error('Failed to refresh storage data:', error);
+            }
+        }
+
+        async function refreshComputeData() {
+            try {
+                // Simulate compute data
+                const mockTasks = [
+                    {
+                        id: 'task_001',
+                        name: 'data_processing.wasm',
+                        status: 'completed',
+                        result: 'Processed 1000 records successfully',
+                        executedOn: 'node_002',
+                        timestamp: Date.now() - 120000
+                    },
+                    {
+                        id: 'task_002',
+                        name: 'ml_inference.wasm',
+                        status: 'pending',
+                        result: 'Waiting for execution...',
+                        executedOn: 'pending',
+                        timestamp: Date.now() - 30000
+                    }
+                ];
+
+                networkData.tasks = mockTasks;
+                updateComputeDisplay();
+                
+            } catch (error) {
+                console.error('Failed to refresh compute data:', error);
+            }
+        }
+
+        async function refreshActivityData() {
+            try {
+                // Simulate activity data
+                const mockActivity = [
+                    { type: 'peer_discovery', message: 'Node node_003 discovered node_001', timestamp: Date.now() - 10000 },
+                    { type: 'file_storage', message: 'File document.pdf stored with 2x redundancy', timestamp: Date.now() - 30000 },
+                    { type: 'compute_execution', message: 'Task data_processing.wasm completed on node_002', timestamp: Date.now() - 120000 }
+                ];
+
+                networkData.activity = mockActivity;
+                updateActivityDisplay();
+                
+            } catch (error) {
+                console.error('Failed to refresh activity data:', error);
+            }
+        }
+
+        function updateNetworkStatus() {
+            const totalNodes = networkData.nodes.filter(n => n.status === 'online').length;
+            const totalStorage = networkData.nodes.reduce((sum, n) => sum + n.storage, 0);
+            const totalCompute = networkData.nodes.reduce((sum, n) => sum + n.compute, 0);
+            const networkHealth = Math.round((totalNodes / CONFIG.P2P_NODES.length) * 100);
+
+            document.getElementById('totalNodes').textContent = totalNodes;
+            document.getElementById('totalStorage').textContent = totalStorage + ' GB';
+            document.getElementById('totalCompute').textContent = totalCompute + ' TFLOPS';
+            document.getElementById('networkHealth').textContent = networkHealth + '%';
+
+            // Update node list
+            const nodeList = document.getElementById('nodeList');
+            if (networkData.nodes.length === 0) {
+                nodeList.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Loading nodes...</p></div>';
+                return;
+            }
+
+            nodeList.innerHTML = networkData.nodes.map(node => `
+                <div class="node-item">
+                    <div class="node-info">
+                        <div class="node-id">${node.id}</div>
+                        <div class="node-address">${node.address}</div>
+                    </div>
+                    <div class="node-status status-${node.status}">${node.status}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateStorageDisplay() {
+            const totalFiles = networkData.files.length;
+            const totalShards = networkData.files.reduce((sum, f) => sum + f.shards, 0);
+            const avgRedundancy = totalFiles > 0 ? Math.round(networkData.files.reduce((sum, f) => sum + f.redundancy, 0) / totalFiles) : 0;
+            const storageEfficiency = totalFiles > 0 ? Math.round((totalShards / (totalFiles * avgRedundancy)) * 100) : 0;
+
+            document.getElementById('totalFiles').textContent = totalFiles;
+            document.getElementById('totalShards').textContent = totalShards;
+            document.getElementById('avgRedundancy').textContent = avgRedundancy + 'x';
+            document.getElementById('storageEfficiency').textContent = storageEfficiency + '%';
+
+            // Update storage list
+            const storageList = document.getElementById('storageList');
+            if (networkData.files.length === 0) {
+                storageList.innerHTML = '<div class="empty-state"><div class="icon">📁</div><p>No files stored yet</p></div>';
+                return;
+            }
+
+            storageList.innerHTML = networkData.files.map(file => `
+                <div class="file-item">
+                    <div class="file-header">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                    </div>
+                    <div class="file-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Shards:</span>${file.shards}
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Redundancy:</span>${file.redundancy}x
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Nodes:</span>${file.nodes.join(', ')}
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Stored:</span>${new Date(file.timestamp).toLocaleTimeString()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateComputeDisplay() {
+            const totalTasks = networkData.tasks.length;
+            const completedTasks = networkData.tasks.filter(t => t.status === 'completed').length;
+            const pendingTasks = networkData.tasks.filter(t => t.status === 'pending').length;
+            const computeUtilization = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            document.getElementById('pendingTasks').textContent = pendingTasks;
+            document.getElementById('computeUtilization').textContent = computeUtilization + '%';
+
+            // Update task list
+            const taskList = document.getElementById('taskList');
+            if (networkData.tasks.length === 0) {
+                taskList.innerHTML = '<div class="empty-state"><div class="icon">⚡</div><p>No compute tasks yet</p></div>';
+                return;
+            }
+
+            taskList.innerHTML = networkData.tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-header">
+                        <div class="task-name">${task.name}</div>
+                        <div class="task-status status-${task.status}">${task.status}</div>
+                    </div>
+                    <div class="task-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Result:</span>${task.result}
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Executed on:</span>${task.executedOn}
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Timestamp:</span>${new Date(task.timestamp).toLocaleTimeString()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateActivityDisplay() {
+            // Update activity metrics
+            const activeConnections = Math.floor(Math.random() * 20) + 5;
+            const dataTransferred = Math.floor(Math.random() * 100) + 50;
+            const peerDiscovery = Math.floor(Math.random() * 10) + 2;
+            const networkLatency = Math.floor(Math.random() * 50) + 10;
+
+            document.getElementById('activeConnections').textContent = activeConnections;
+            document.getElementById('dataTransferred').textContent = dataTransferred + ' MB';
+            document.getElementById('peerDiscovery').textContent = peerDiscovery;
+            document.getElementById('networkLatency').textContent = networkLatency + 'ms';
+
+            // Update activity log
+            const activityLog = document.getElementById('activityLog');
+            if (networkData.activity.length === 0) {
+                activityLog.innerHTML = '<div class="empty-state"><div class="icon">📈</div><p>Monitoring network activity...</p></div>';
+                return;
+            }
+
+            activityLog.innerHTML = networkData.activity.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-message">${activity.message}</div>
+                    <div class="activity-time">${new Date(activity.timestamp).toLocaleTimeString()}</div>
+                </div>
+            `).join('');
+        }
+
+        function showAlert(type, message) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

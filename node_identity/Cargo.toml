@@ -1,0 +1,16 @@
+[package]
+name = "xmbl_node_identity"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+secp256k1 = { version = "0.28", features = ["rand", "serde"] }
+sha3 = "0.10"
+hex = "0.4"
+rand = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
+thiserror = "2.0"
+uuid = { version = "1.0", features = ["v4"] }
+log = "0.4"

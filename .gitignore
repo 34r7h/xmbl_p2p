@@ -1,0 +1,98 @@
+# Rust build artifacts
+target/
+**/target/
+Cargo.lock
+
+# Rust generated files
+*.rs.bk
+*.pdb
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+logs/
+tmp/
+temp/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python cache (for HTTP server scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Test coverage
+coverage/
+*.gcov
+*.lcov
+
+# Documentation build
+docs/_build/
+docs/build/
+
+# Secrets and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+
+# Local configuration
+config.local.*
+*.local
+
+# Cache directories
+.cache/
+.cargo/
+.rustup/
+
+# Profiling data
+*.prof
+*.pgo
+
+# Benchmark results
+benches/target/
+
+# Fuzzing artifacts
+fuzz/target/
+
+# Generated documentation
+doc/
+
+# Temporary files
+*.orig
+*.rej

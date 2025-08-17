@@ -1,0 +1,23 @@
+[package]
+name = "xmbl_network"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+thiserror = "2.0"
+uuid = { version = "1.0", features = ["v4"] }
+log = "0.4"
+libp2p = { version = "0.52", features = ["tcp", "noise", "yamux", "macros", "mdns", "ping", "request-response"] }
+libp2p-swarm = "0.43"
+libp2p-core = "0.40"
+libp2p-identity = "0.2"
+libp2p-tcp = "0.40"
+libp2p-noise = "0.43"
+libp2p-yamux = "0.44"
+libp2p-mdns = "0.44"
+libp2p-ping = "0.43"
+libp2p-request-response = "0.25"

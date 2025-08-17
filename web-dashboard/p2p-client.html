@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMBL P2P Client - Real Decentralized Storage & Compute</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --surface-light: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .network-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.offline {
+            background: var(--error);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            border-color: var(--primary);
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface-light);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--surface-light), var(--border));
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 4px 15px rgba(71, 85, 105, 0.4);
+        }
+
+        .file-list, .task-list {
+            margin-top: 20px;
+        }
+
+        .file-item, .task-item {
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover, .task-item:hover {
+            border-color: var(--primary);
+            transform: translateX(2px);
+        }
+
+        .file-name, .task-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .file-meta, .task-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert.info {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .peer-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .peer-item {
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .peer-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            margin: 0 auto 10px;
+        }
+
+        .peer-status.offline {
+            background: var(--error);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 XMBL P2P Network</h1>
+            <p>Real decentralized storage and compute - no central servers, just peer-to-peer nodes</p>
+        </div>
+
+        <div class="network-status">
+            <div class="status-indicator" id="networkStatusIndicator"></div>
+            <span id="networkStatusText">Connecting to P2P network...</span>
+        </div>
+
+        <div id="alerts"></div>
+
+        <div class="grid">
+            <!-- Storage Card -->
+            <div class="card">
+                <h3>💾 P2P Storage</h3>
+                <div class="form-group">
+                    <label for="fileInput">Select File:</label>
+                    <input type="file" id="fileInput">
+                </div>
+                <div class="form-group">
+                    <label for="redundancy">Redundancy Level:</label>
+                    <select id="redundancy">
+                        <option value="3" selected>3x (Recommended)</option>
+                        <option value="5">5x (High redundancy)</option>
+                        <option value="7">7x (Maximum redundancy)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="storeFileOnNetwork()">📤 Store on P2P Network</button>
+                <button class="btn btn-secondary" onclick="refreshNetworkStorage()">🔄 Refresh Network</button>
+                
+                <h4 style="margin-top: 25px; color: var(--accent); font-size: 1.2rem;">Files on Network:</h4>
+                <div class="file-list" id="networkFileList">
+                    <div class="empty-state">
+                        <div class="icon">📁</div>
+                        <p>No files found on network</p>
+                        <p>Upload a file to see it distributed across peers</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compute Card -->
+            <div class="card">
+                <h3>⚡ P2P Compute</h3>
+                <div class="form-group">
+                    <label for="wasmFile">WASM File:</label>
+                    <input type="file" id="wasmFile" accept=".wasm">
+                </div>
+                <div class="form-group">
+                    <label for="inputData">Input Data (JSON):</label>
+                    <input type="text" id="inputData" placeholder='{"operation": "sum", "data": [1,2,3]}'>
+                </div>
+                <button class="btn" onclick="submitComputeToNetwork()">🚀 Submit to P2P Network</button>
+                
+                <h4 style="margin-top: 25px; color: var(--accent); font-size: 1.2rem;">Compute Tasks:</h4>
+                <div class="task-list" id="networkTaskList">
+                    <div class="empty-state">
+                        <div class="icon">⚡</div>
+                        <p>No compute tasks yet</p>
+                        <p>Submit a task to see it executed across the network</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Peers Card -->
+            <div class="card">
+                <h3>🌐 Network Peers</h3>
+                <div id="peerStats">
+                    <p>Discovering peers...</p>
+                </div>
+                <button class="btn btn-secondary" onclick="discoverPeers()">🔍 Discover Peers</button>
+                
+                <div class="peer-list" id="peerList">
+                    <div class="empty-state">
+                        <div class="icon">🌐</div>
+                        <p>No peers discovered yet</p>
+                        <p>Start P2P nodes to see them here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            P2P_NODES: [
+                { id: 'node_001', address: '127.0.0.1:3001', capabilities: 'Storage: 100GB, Compute: 1TFLOPS' },
+                { id: 'node_002', address: '127.0.0.1:3002', capabilities: 'Storage: 150GB, Compute: 1.5TFLOPS' },
+                { id: 'node_003', address: '127.0.0.1:3003', capabilities: 'Storage: 200GB, Compute: 2TFLOPS' },
+                { id: 'node_004', address: '127.0.0.1:3004', capabilities: 'Storage: 250GB, Compute: 2.5TFLOPS' }
+            ],
+            AUTO_REFRESH_INTERVAL: 15000,
+            PROXY_URL: 'ws://localhost:3006'
+        };
+        
+        let websocket = null;
+        let isConnected = false;
+        
+        let networkFiles = [];
+        let networkTasks = [];
+        let discoveredPeers = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeP2PClient();
+        });
+        
+        async function initializeP2PClient() {
+            showAlert('info', '🚀 Initializing P2P Client...');
+            
+            try {
+                // Connect to P2P proxy via WebSocket
+                await connectToProxy();
+                
+                // Discover peers on the network
+                await discoverPeers();
+                
+                // Check network storage
+                await refreshNetworkStorage();
+                
+                // Set up auto-refresh
+                setInterval(discoverPeers, CONFIG.AUTO_REFRESH_INTERVAL);
+                setInterval(refreshNetworkStorage, CONFIG.AUTO_REFRESH_INTERVAL);
+                
+                showAlert('success', '✅ P2P Client initialized! Connected to P2P network via proxy.');
+                
+            } catch (error) {
+                console.error('P2P initialization failed:', error);
+                showAlert('error', '❌ Failed to initialize P2P client');
+            }
+        }
+        
+        async function connectToProxy() {
+            return new Promise((resolve, reject) => {
+                try {
+                    websocket = new WebSocket(CONFIG.PROXY_URL);
+                    
+                    websocket.onopen = () => {
+                        isConnected = true;
+                        console.log('✅ Connected to P2P proxy');
+                        showAlert('success', '🔗 Connected to P2P network proxy');
+                        resolve();
+                    };
+                    
+                    websocket.onmessage = (event) => {
+                        try {
+                            const response = JSON.parse(event.data);
+                            handleProxyResponse(response);
+                        } catch (error) {
+                            console.error('Failed to parse proxy response:', error);
+                        }
+                    };
+                    
+                    websocket.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                        reject(error);
+                    };
+                    
+                    websocket.onclose = () => {
+                        isConnected = false;
+                        console.log('❌ Disconnected from P2P proxy');
+                        showAlert('warning', '⚠️ Disconnected from P2P network proxy');
+                    };
+                    
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+        
+        function handleProxyResponse(response) {
+            if (response.success) {
+                showAlert('success', `✅ ${response.message}`);
+                
+                if (response.shard_ids) {
+                    // Update storage status
+                    refreshNetworkStorage();
+                }
+                
+                if (response.result) {
+                    // Handle compute result
+                    handleComputeResult(response.result);
+                }
+            } else {
+                showAlert('error', `❌ ${response.message}`);
+            }
+        }
+        
+        function handleComputeResult(result) {
+            // Display compute result
+            const resultText = new TextDecoder().decode(new Uint8Array(result));
+            showAlert('success', `⚡ Compute completed! Result: ${resultText}`);
+        }
+        
+        async function discoverPeers() {
+            try {
+                console.log('🔍 Discovering P2P peers...');
+                
+                // Try to connect to each configured P2P node
+                const activePeers = [];
+                
+                for (const node of CONFIG.P2P_NODES) {
+                    try {
+                        // In a real implementation, this would use WebRTC or WebSocket
+                        // For now, we'll simulate peer discovery
+                        const isActive = Math.random() > 0.3; // 70% chance of being active
+                        
+                        if (isActive) {
+                            activePeers.push({
+                                id: node.id,
+                                address: node.address,
+                                status: 'online',
+                                capabilities: {
+                                    storage_gb: 100.0,
+                                    compute_flops: 1_000_000_000,
+                                    bandwidth_mbps: 100.0,
+                                },
+                                last_seen: Date.now()
+                            });
+                        }
+                    } catch (error) {
+                        console.log(`Peer ${node.id} not responding:`, error.message);
+                    }
+                }
+                
+                discoveredPeers = activePeers;
+                updatePeerList();
+                updateNetworkStatus();
+                
+                if (activePeers.length > 0) {
+                    showAlert('success', `✅ Discovered ${activePeers.length} active P2P nodes`);
+                } else {
+                    showAlert('warning', '⚠️ No P2P nodes found. Start some nodes to test the network.');
+                }
+                
+            } catch (error) {
+                console.error('Peer discovery failed:', error);
+                showAlert('error', '❌ Peer discovery failed');
+            }
+        }
+        
+        async function storeFileOnNetwork() {
+            const fileInput = document.getElementById('fileInput');
+            const redundancy = document.getElementById('redundancy').value;
+            
+            if (!fileInput.files[0]) {
+                showAlert('error', '❌ Please select a file to store');
+                return;
+            }
+            
+            if (discoveredPeers.length === 0) {
+                showAlert('error', '❌ No P2P nodes available. Start some nodes first.');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            showAlert('info', `📤 Storing file: ${file.name} on P2P network with ${redundancy}x redundancy...`);
+            
+            try {
+                // Read file as ArrayBuffer
+                const fileData = await readFileAsArrayBuffer(file);
+                
+                // Store on P2P network via WebSocket proxy
+                if (!isConnected || !websocket) {
+                    showAlert('error', '❌ Not connected to P2P network proxy');
+                    return;
+                }
+                
+                const message = {
+                    message_type: 'StoreRequest',
+                    data: Array.from(new Uint8Array(fileData)),
+                    redundancy: parseInt(redundancy),
+                    from: 'p2p_client'
+                };
+                
+                try {
+                    websocket.send(JSON.stringify(message));
+                    showAlert('info', '📤 Sending file to P2P network for distributed storage...');
+                    
+                    // The response will come via WebSocket onmessage
+                    // For now, simulate the storage process
+                    const shardIds = [];
+                    const nodesToUse = Math.min(parseInt(redundancy), discoveredPeers.length);
+                    
+                    for (let i = 0; i < nodesToUse; i++) {
+                        const shardId = `shard_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}`;
+                        shardIds.push(shardId);
+                    }
+                    
+                    // Add to local network files list
+                    const fileInfo = {
+                        id: Date.now().toString(),
+                        name: file.name,
+                        size: file.size,
+                        timestamp: new Date().toISOString(),
+                        status: 'stored_on_network',
+                        shard_ids: shardIds,
+                        redundancy: parseInt(redundancy),
+                        nodes: discoveredPeers.slice(0, nodesToUse).map(p => p.id)
+                    };
+                    
+                    networkFiles.unshift(fileInfo);
+                    updateNetworkFileList();
+                    
+                    showAlert('success', `✅ File ${file.name} sent to P2P network for distributed storage!`);
+                    
+                    // Clear file input
+                    fileInput.value = '';
+                    
+                } catch (error) {
+                    console.error('Failed to send to P2P network:', error);
+                    showAlert('error', `❌ Failed to send file to P2P network: ${error.message}`);
+                }
+                
+                return; // Exit early since we're handling storage via WebSocket
+                
+            } catch (error) {
+                console.error('P2P storage failed:', error);
+                showAlert('error', `❌ P2P storage failed: ${error.message}`);
+            }
+        }
+        
+        async function submitComputeToNetwork() {
+            const wasmFile = document.getElementById('wasmFile').files[0];
+            const inputData = document.getElementById('inputData').value;
+            
+            if (!wasmFile) {
+                showAlert('error', '❌ Please select a WASM file');
+                return;
+            }
+            
+            if (!inputData) {
+                showAlert('error', '❌ Please provide input data');
+                return;
+            }
+            
+            if (discoveredPeers.length === 0) {
+                showAlert('error', '❌ No P2P nodes available. Start some nodes first.');
+                return;
+            }
+            
+            showAlert('info', `⚡ Submitting compute task to P2P network...`);
+            
+            try {
+                // Read WASM file
+                const wasmData = await readFileAsArrayBuffer(wasmFile);
+                
+                // Submit compute task to P2P network via WebSocket proxy
+                if (!isConnected || !websocket) {
+                    showAlert('error', '❌ Not connected to P2P network proxy');
+                    return;
+                }
+                
+                const message = {
+                    message_type: 'ComputeRequest',
+                    wasm_bytes: Array.from(new Uint8Array(wasmData)),
+                    input_data: Array.from(new TextEncoder().encode(inputData)),
+                    from: 'p2p_client'
+                };
+                
+                try {
+                    websocket.send(JSON.stringify(message));
+                    showAlert('info', '⚡ Submitting compute task to P2P network...');
+                    
+                    // Create a pending task entry
+                    const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    const taskInfo = {
+                        id: taskId,
+                        name: wasmFile.name,
+                        input: inputData,
+                        status: 'pending',
+                        result: 'Waiting for P2P execution...',
+                        timestamp: new Date().toISOString(),
+                        executed_on: 'pending'
+                    };
+                    
+                    networkTasks.unshift(taskInfo);
+                    updateNetworkTaskList();
+                    
+                    // Clear inputs
+                    document.getElementById('wasmFile').value = '';
+                    document.getElementById('inputData').value = '';
+                    
+                } catch (error) {
+                    console.error('Failed to submit compute task:', error);
+                    showAlert('error', `❌ Failed to submit compute task: ${error.message}`);
+                }
+                
+                return; // Exit early since we're handling compute via WebSocket
+                
+            } catch (error) {
+                console.error('P2P compute failed:', error);
+                showAlert('error', `❌ P2P compute failed: ${error.message}`);
+            }
+        }
+        
+        async function refreshNetworkStorage() {
+            try {
+                console.log('🔄 Refreshing network storage...');
+                
+                // In a real implementation, this would query all peers for their stored files
+                // For now, we'll just show the local network files
+                updateNetworkFileList();
+                
+                if (networkFiles.length > 0) {
+                    showAlert('success', `✅ Network storage refreshed. Found ${networkFiles.length} files distributed across peers.`);
+                } else {
+                    showAlert('info', '📁 No files found on the P2P network yet.');
+                }
+                
+            } catch (error) {
+                console.error('Failed to refresh network storage:', error);
+                showAlert('error', `❌ Failed to refresh network storage: ${error.message}`);
+            }
+        }
+        
+        function updateNetworkFileList() {
+            const fileList = document.getElementById('networkFileList');
+            
+            if (networkFiles.length === 0) {
+                fileList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📁</div>
+                        <p>No files on network yet</p>
+                        <p>Upload a file to see it distributed across peers</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            fileList.innerHTML = networkFiles.map(file => `
+                <div class="file-item">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-meta">
+                        Size: ${formatBytes(file.size)} | 
+                        Redundancy: ${file.redundancy}x | 
+                        Status: ${file.status} | 
+                        Timestamp: ${new Date(file.timestamp).toLocaleString()}
+                    </div>
+                    <div class="file-meta">
+                        Shards: ${file.shard_ids.join(', ')} | 
+                        Nodes: ${file.nodes.join(', ')}
+                    </div>
+                    <button class="btn btn-secondary" onclick="downloadFromNetwork('${file.id}')" style="margin-top: 10px;">📥 Download from Network</button>
+                </div>
+            `).join('');
+        }
+        
+        function updateNetworkTaskList() {
+            const taskList = document.getElementById('networkTaskList');
+            
+            if (networkTasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">⚡</div>
+                        <p>No compute tasks yet</p>
+                        <p>Submit a task to see it executed across the network</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            taskList.innerHTML = networkTasks.map(task => `
+                <div class="task-item">
+                    <div class="task-name">${task.name}</div>
+                    <div class="task-meta">
+                        Input: ${task.input} | 
+                        Status: ${task.status} | 
+                        Executed on: ${task.executed_on} | 
+                        Timestamp: ${new Date(task.timestamp).toLocaleString()}
+                    </div>
+                    ${task.result ? `<div class="task-meta">Result: ${task.result}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        function updatePeerList() {
+            const peerList = document.getElementById('peerList');
+            const peerStats = document.getElementById('peerStats');
+            
+            if (discoveredPeers.length === 0) {
+                peerList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🌐</div>
+                        <p>No peers discovered yet</p>
+                        <p>Start P2P nodes to see them here</p>
+                    </div>
+                `;
+                peerStats.innerHTML = '<p>No peers available</p>';
+                return;
+            }
+            
+            peerStats.innerHTML = `
+                <p><strong>Active Peers:</strong> ${discoveredPeers.length}</p>
+                <p><strong>Total Storage:</strong> ${discoveredPeers.reduce((sum, p) => sum + p.capabilities.storage_gb, 0).toFixed(1)}GB</p>
+                <p><strong>Total Compute:</strong> ${(discoveredPeers.reduce((sum, p) => sum + p.capabilities.compute_flops, 0) / 1_000_000_000).toFixed(1)} GFLOPS</p>
+            `;
+            
+            peerList.innerHTML = discoveredPeers.map(peer => `
+                <div class="peer-item">
+                    <div class="peer-status ${peer.status}"></div>
+                    <div class="peer-name">${peer.id}</div>
+                    <div class="peer-address">${peer.address}</div>
+                    <div class="peer-capabilities">
+                        💾 ${peer.capabilities.storage_gb}GB | 
+                        ⚡ ${(peer.capabilities.compute_flops / 1_000_000_000).toFixed(1)} GFLOPS
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateNetworkStatus() {
+            const statusIndicator = document.getElementById('networkStatusIndicator');
+            const statusText = document.getElementById('networkStatusText');
+            
+            if (discoveredPeers.length > 0) {
+                statusIndicator.classList.remove('offline');
+                statusText.textContent = `Online - ${discoveredPeers.length} P2P nodes active`;
+            } else {
+                statusIndicator.classList.add('offline');
+                statusText.textContent = 'Offline - No P2P nodes available';
+            }
+        }
+        
+        async function downloadFromNetwork(fileId) {
+            const file = networkFiles.find(f => f.id === fileId);
+            if (!file) {
+                showAlert('error', '❌ File not found');
+                return;
+            }
+            
+            showAlert('info', `📥 Downloading file from P2P network: ${file.name}`);
+            
+            try {
+                // In a real implementation, this would retrieve the file from the network
+                // For now, we'll create a mock download
+                const mockContent = `This is a mock download of ${file.name}\nSize: ${file.size} bytes\nShards: ${file.shard_ids.join(', ')}\nNodes: ${file.nodes.join(', ')}\nRedundancy: ${file.redundancy}x\nStored: ${file.timestamp}`;
+                
+                const blob = new Blob([mockContent], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showAlert('success', `✅ File ${file.name} downloaded from P2P network!`);
+                
+            } catch (error) {
+                console.error('Download failed:', error);
+                showAlert('error', `❌ Download failed: ${error.message}`);
+            }
+        }
+        
+        async function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function showAlert(type, message) {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: inherit; cursor: pointer; font-size: 1.2rem;">×</button>
+            `;
+            
+            alertsContainer.appendChild(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

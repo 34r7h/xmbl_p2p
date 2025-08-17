@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMBL Network Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #ffd700;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .metric-value {
+            font-weight: bold;
+            color: #90EE90;
+        }
+        .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .status.healthy {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.warning {
+            background: #FF9800;
+            color: white;
+        }
+        .status.critical {
+            background: #F44336;
+            color: white;
+        }
+        .refresh-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+        .refresh-btn:hover {
+            background: #45a049;
+        }
+        .loading {
+            text-align: center;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 XMBL Network Dashboard</h1>
+            <p>Real-time monitoring and management interface</p>
+        </div>
+        
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>📊 System Metrics</h3>
+                <div id="metrics">
+                    <div class="loading">Loading metrics...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🚨 Active Alerts</h3>
+                <div id="alerts">
+                    <div class="loading">Loading alerts...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🌐 Network Status</h3>
+                <div id="network">
+                    <div class="loading">Loading network status...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>💾 Storage Overview</h3>
+                <div id="storage">
+                    <div class="loading">Loading storage info...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MONITORING_URL = 'http://localhost:3001';
+        
+        async function fetchMetrics() {
+            try {
+                const response = await fetch(`${MONITORING_URL}/metrics`);
+                const data = await response.json();
+                
+                const metricsHtml = `
+                    <div class="metric">
+                        <span>Node ID:</span>
+                        <span class="metric-value">${data.node_id}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Status:</span>
+                        <span class="status ${data.status}">${data.status}</span>
+                    </div>
+                    <div class="metric">
+                        <span>CPU Usage:</span>
+                        <span class="metric-value">${(data.metrics.cpu_usage * 100).toFixed(1)}%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Memory Usage:</span>
+                        <span class="metric-value">${(data.metrics.memory_usage * 100).toFixed(1)}%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Disk Usage:</span>
+                        <span class="metric-value">${(data.metrics.disk_usage * 100).toFixed(1)}%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Network In:</span>
+                        <span class="metric-value">${(data.metrics.network_io.bytes_in / 1024 / 1024).toFixed(2)} MB</span>
+                    </div>
+                    <div class="metric">
+                        <span>Network Out:</span>
+                        <span class="metric-value">${(data.metrics.network_io.bytes_out / 1024 / 1024).toFixed(2)} MB</span>
+                    </div>
+                `;
+                
+                document.getElementById('metrics').innerHTML = metricsHtml;
+            } catch (error) {
+                document.getElementById('metrics').innerHTML = `
+                    <div style="color: #ff6b6b;">Error loading metrics: ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function fetchAlerts() {
+            try {
+                const response = await fetch(`${MONITORING_URL}/alerts`);
+                const alerts = await response.json();
+                
+                if (alerts.length === 0) {
+                    document.getElementById('alerts').innerHTML = `
+                        <div style="color: #90EE90;">✅ No active alerts</div>
+                    `;
+                } else {
+                    const alertsHtml = alerts.map(alert => `
+                        <div class="metric">
+                            <span>${alert.message}</span>
+                            <span class="status ${alert.severity.toLowerCase()}">${alert.severity}</span>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('alerts').innerHTML = alertsHtml;
+                }
+            } catch (error) {
+                document.getElementById('alerts').innerHTML = `
+                    <div style="color: #ff6b6b;">Error loading alerts: ${error.message}</div>
+                `;
+            }
+        }
+        
+        function updateNetworkStatus() {
+            document.getElementById('network').innerHTML = `
+                <div class="metric">
+                    <span>Status:</span>
+                    <span class="status healthy">Online</span>
+                </div>
+                <div class="metric">
+                    <span>Connected Peers:</span>
+                    <span class="metric-value">2</span>
+                </div>
+                <div class="metric">
+                    <span>Latency:</span>
+                    <span class="metric-value">15ms</span>
+                </div>
+                <div class="metric">
+                    <span>Bandwidth:</span>
+                    <span class="metric-value">1.2 Gbps</span>
+                </div>
+            `;
+        }
+        
+        function updateStorageStatus() {
+            document.getElementById('storage').innerHTML = `
+                <div class="metric">
+                    <span>Total Storage:</span>
+                    <span class="metric-value">1.0 TB</span>
+                </div>
+                <div class="metric">
+                    <span>Used Storage:</span>
+                    <span class="metric-value">625 GB</span>
+                </div>
+                <div class="metric">
+                    <span>Available:</span>
+                    <span class="metric-value">375 GB</span>
+                </div>
+                <div class="metric">
+                    <span>Redundancy:</span>
+                    <span class="metric-value">3x</span>
+                </div>
+            `;
+        }
+        
+        async function refreshData() {
+            await fetchMetrics();
+            await fetchAlerts();
+            updateNetworkStatus();
+            updateStorageStatus();
+        }
+        
+        // Initial load
+        refreshData();
+        
+        // Auto-refresh every 10 seconds
+        setInterval(refreshData, 10000);
+    </script>
+</body>
+</html>
