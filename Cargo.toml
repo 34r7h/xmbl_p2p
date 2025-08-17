@@ -11,7 +11,8 @@ members = [
     "simulator",
     "monitoring",
     "p2p-node",
-    "p2p-proxy"
+    "p2p-proxy",
+    "web-api"
 ]
 
 [workspace.package]

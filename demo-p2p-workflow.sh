@@ -15,14 +15,14 @@ echo ""
 echo "📋 Checking System Status..."
 echo "----------------------------"
 
-if curl -s http://localhost:3001/health > /dev/null; then
+if curl -s http://localhost:3005/health > /dev/null; then
     echo "✅ Monitoring Service: RUNNING"
 else
     echo "❌ Monitoring Service: NOT RUNNING"
     exit 1
 fi
 
-if curl -s http://localhost:3000 > /dev/null; then
+if curl -s http://localhost:3100 > /dev/null; then
     echo "✅ Web Dashboard: RUNNING"
 else
     echo "❌ Web Dashboard: NOT RUNNING"
@@ -103,13 +103,13 @@ echo "📊 STEP 5: Monitoring and Alerts Demonstration"
 echo "=============================================="
 
 echo "5.1 Getting system metrics..."
-METRICS=$(curl -s http://localhost:3001/metrics | jq '.metrics | {cpu_usage, memory_usage, disk_usage}' 2>/dev/null)
+METRICS=$(curl -s http://localhost:3005/metrics | jq '.metrics | {cpu_usage, memory_usage, disk_usage}' 2>/dev/null)
 echo "System Metrics:"
 echo "$METRICS"
 
 echo ""
 echo "5.2 Creating system alert..."
-ALERT_RESULT=$(curl -s -X POST http://localhost:3001/alerts \
+ALERT_RESULT=$(curl -s -X POST http://localhost:3005/alerts \
     -H "Content-Type: application/json" \
     -d '{"message": "P2P workflow demonstration completed", "severity": "info"}' 2>/dev/null)
 echo "✅ Alert created successfully"
@@ -121,12 +121,12 @@ echo "🌐 STEP 6: Web Interface Demonstration"
 echo "======================================"
 
 echo "6.1 Main Dashboard Status:"
-DASHBOARD_TITLE=$(curl -s http://localhost:3000 | grep -o '<title>.*</title>')
+DASHBOARD_TITLE=$(curl -s http://localhost:3100 | grep -o '<title>.*</title>')
 echo "$DASHBOARD_TITLE"
 
 echo ""
 echo "6.2 P2P Client App Status:"
-CLIENT_TITLE=$(curl -s http://localhost:3000/client.html | grep -o '<title>.*</title>')
+CLIENT_TITLE=$(curl -s http://localhost:3100/functional-client.html | grep -o '<title>.*</title>')
 echo "$CLIENT_TITLE"
 
 echo ""
@@ -148,9 +148,9 @@ echo ""
 echo "🌐 USER ACCESS POINTS"
 echo "====================="
 
-echo "📱 Main Dashboard: http://localhost:3000"
-echo "🚀 P2P Client App: http://localhost:3000/client.html"
-echo "📊 Monitoring API: http://localhost:3001"
+echo "📱 Main Dashboard: http://localhost:3100"
+echo "🚀 P2P Client App: http://localhost:3100/functional-client.html"
+echo "📊 Monitoring API: http://localhost:3005"
 echo ""
 
 echo "🔧 CLI Commands Available:"
@@ -165,7 +165,7 @@ echo ""
 echo "🎮 WHAT YOU CAN DO RIGHT NOW"
 echo "============================="
 
-echo "1. 🌐 Open http://localhost:3000/client.html in your browser"
+echo "1. 🌐 Open http://localhost:3100/functional-client.html in your browser"
 echo "2. 💾 Upload files to the P2P network with configurable redundancy"
 echo "3. ⚡ Submit WASM compute tasks with JSON input data"
 echo "4. 📊 Monitor real-time network status and peer connections"

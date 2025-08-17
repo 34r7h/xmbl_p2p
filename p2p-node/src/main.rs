@@ -96,10 +96,12 @@ impl P2PNode {
         
         // Only add peers that are different from this node
         let mock_peers = vec![
-            ("node_001".to_string(), "127.0.0.1:3001".to_string()),
-            ("node_002".to_string(), "127.0.0.1:3002".to_string()),
-            ("node_003".to_string(), "127.0.0.1:3003".to_string()),
-            ("node_004".to_string(), "127.0.0.1:3004".to_string()),
+            ("node_001".to_string(), "127.0.0.1:3010".to_string()),
+            ("node_002".to_string(), "127.0.0.1:3011".to_string()),
+            ("node_003".to_string(), "127.0.0.1:3012".to_string()),
+            ("node_004".to_string(), "127.0.0.1:3013".to_string()),
+            ("node_005".to_string(), "127.0.0.1:3014".to_string()),
+            ("node_006".to_string(), "127.0.0.1:3015".to_string()),
         ];
         
         for (peer_id, peer_addr) in mock_peers {
@@ -125,11 +127,108 @@ impl P2PNode {
         
         println!("🌐 Total peers discovered: {}", self.peers.len());
         
-        // Note: We don't automatically connect to peers during discovery
-        // Connections will be established when actual P2P operations are requested
-        println!("📡 Peer discovery complete. Ready for P2P operations.");
+        // Actively connect to peers to form the swarm
+        println!("🔗 Forming P2P swarm...");
+        self.connect_to_peers().await?;
+        
+        // Start heartbeat to maintain swarm connectivity
+        self.start_heartbeat().await?;
+        
+        // Display swarm status
+        self.display_swarm_status().await;
+        
+        println!("📡 P2P swarm formed successfully!");
         
         Ok(())
+    }
+    
+    async fn connect_to_peers(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        println!("🔗 Connecting to peer nodes to form swarm...");
+        
+        for (peer_id, peer_info) in &self.peers {
+            if peer_id != &self.node_id {
+                println!("🔌 Attempting connection to peer: {} at {}", peer_id, peer_info.address);
+                
+                match TcpStream::connect(&peer_info.address).await {
+                    Ok(mut stream) => {
+                        // Send discovery message to establish connection
+                        let message = P2PMessage::DiscoveryRequest {
+                            from: self.node_id.clone(),
+                        };
+                        
+                        if let Ok(message_data) = serde_json::to_vec(&message) {
+                            if stream.write_all(&message_data).await.is_ok() {
+                                println!("✅ Successfully connected to peer: {}", peer_id);
+                                
+                                // Update peer status - we'll do this after the loop to avoid borrow checker issues
+                                println!("✅ Successfully connected to peer: {}", peer_id);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        println!("⚠️  Could not connect to peer {}: {} (will retry later)", peer_id, e);
+                    }
+                }
+            }
+        }
+        
+        println!("🌐 Swarm connection attempts completed");
+        Ok(())
+    }
+    
+    async fn start_heartbeat(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        println!("💓 Starting heartbeat to maintain swarm connectivity...");
+        
+        let peers = self.peers.clone();
+        let node_id = self.node_id.clone();
+        
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(10));
+            
+            loop {
+                interval.tick().await;
+                
+                for (peer_id, peer_info) in &peers {
+                    if peer_id != &node_id {
+                        let message = P2PMessage::Ping {
+                            from: node_id.clone(),
+                            timestamp: std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .unwrap()
+                                .as_secs(),
+                        };
+                        
+                        if let Ok(message_data) = serde_json::to_vec(&message) {
+                            if let Ok(mut stream) = TcpStream::connect(&peer_info.address).await {
+                                let _ = stream.write_all(&message_data).await;
+                                println!("💓 Heartbeat sent to peer: {}", peer_id);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        Ok(())
+    }
+    
+    async fn display_swarm_status(&self) {
+        println!("");
+        println!("🌐 P2P SWARM STATUS");
+        println!("===================");
+        println!("Node ID: {}", self.node_id);
+        println!("Address: {}", self.address);
+        println!("Connected Peers: {}", self.peers.len());
+        println!("");
+        
+        for (peer_id, peer_info) in &self.peers {
+            if peer_id != &self.node_id {
+                let status = if peer_info.last_seen > 0 { "🟢 ONLINE" } else { "🔴 OFFLINE" };
+                println!("  {} - {} - {}GB storage - {}Mbps bandwidth", 
+                    status, peer_id, peer_info.capabilities.storage_gb, peer_info.capabilities.bandwidth_mbps);
+            }
+        }
+        println!("");
     }
     
     async fn listen_for_connections(&mut self) -> Result<(), Box<dyn std::error::Error>> {

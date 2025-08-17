@@ -8,19 +8,19 @@ echo ""
 
 # Check if services are running
 echo "📋 Checking system status..."
-if curl -s http://localhost:3001/health > /dev/null; then
+if curl -s http://localhost:3005/health > /dev/null; then
     echo "✅ Monitoring service: RUNNING"
 else
     echo "❌ Monitoring service: NOT RUNNING"
 fi
 
-if curl -s http://localhost:3003/api/network/status > /dev/null; then
+if curl -s http://localhost:3200/api/network/status > /dev/null; then
     echo "✅ P2P Web API: RUNNING"
 else
     echo "❌ P2P Web API: NOT RUNNING"
 fi
 
-if curl -s http://localhost:3000/real-functional-client.html > /dev/null; then
+if curl -s http://localhost:3100/functional-client.html > /dev/null; then
     echo "✅ Web Dashboard: RUNNING"
 else
     echo "❌ Web Dashboard: NOT RUNNING"
@@ -31,7 +31,7 @@ echo ""
 # Show current storage state
 echo "📁 Current P2P Storage State:"
 echo "-------------------------------"
-curl -s http://localhost:3003/api/stats | jq -r '
+curl -s http://localhost:3200/api/stats | jq -r '
     "Total Storage: " + (.total_gb | tostring) + " GB" + "\n" +
     "Used Storage: " + (.used_gb | tostring) + " GB" + "\n" +
     "Stored Files: " + (.shard_count | tostring) + "\n" +
@@ -43,7 +43,7 @@ echo ""
 # Show stored files
 echo "📄 Currently Stored Files:"
 echo "---------------------------"
-curl -s http://localhost:3003/api/files | jq -r '.[] | 
+curl -s http://localhost:3200/api/files | jq -r '.[] | 
     "File: " + .filename + "\n" +
     "  Size: " + (.size_bytes | tostring) + " bytes\n" +
     "  Shard ID: " + .shard_id + "\n" +
@@ -63,7 +63,7 @@ echo "This is a demonstration file for real P2P storage" > demo-p2p-test.txt
 
 # Upload it
 echo "Uploading demo-p2p-test.txt with 7x redundancy..."
-UPLOAD_RESPONSE=$(curl -s -X POST http://localhost:3003/api/upload \
+UPLOAD_RESPONSE=$(curl -s -X POST http://localhost:3200/api/upload \
     -H "Content-Type: application/json" \
     -d '{
         "filename": "demo-p2p-test.txt",
@@ -78,7 +78,7 @@ echo ""
 # Show updated storage state
 echo "📊 Updated Storage State:"
 echo "-------------------------"
-curl -s http://localhost:3003/api/stats | jq -r '
+curl -s http://localhost:3200/api/stats | jq -r '
     "Total Storage: " + (.total_gb | tostring) + " GB" + "\n" +
     "Used Storage: " + (.used_gb | tostring) + " GB" + "\n" +
     "Stored Files: " + (.shard_count | tostring) + "\n" +
@@ -90,7 +90,7 @@ echo ""
 # Show all files
 echo "📄 All Stored Files After Upload:"
 echo "----------------------------------"
-curl -s http://localhost:3003/api/files | jq -r '.[] | 
+curl -s http://localhost:3200/api/files | jq -r '.[] | 
     "File: " + .filename + "\n" +
     "  Size: " + (.size_bytes | tostring) + " bytes\n" +
     "  Shard ID: " + .shard_id + "\n" +
@@ -106,10 +106,10 @@ echo "🗑️ Testing File Deletion..."
 echo "---------------------------"
 
 # Get the first file to delete
-FIRST_FILE=$(curl -s http://localhost:3003/api/files | jq -r '.[0].shard_id')
+FIRST_FILE=$(curl -s http://localhost:3200/api/files | jq -r '.[0].shard_id')
 if [ "$FIRST_FILE" != "null" ] && [ "$FIRST_FILE" != "" ]; then
     echo "Deleting file with shard ID: $FIRST_FILE"
-    DELETE_RESPONSE=$(curl -s -X POST http://localhost:3003/api/files/delete \
+    DELETE_RESPONSE=$(curl -s -X POST http://localhost:3200/api/files/delete \
         -H "Content-Type: application/json" \
         -d "{\"shard_id\": \"$FIRST_FILE\"}")
     echo "Delete response: $DELETE_RESPONSE"
@@ -122,7 +122,7 @@ echo ""
 # Final storage state
 echo "📊 Final Storage State:"
 echo "-----------------------"
-curl -s http://localhost:3003/api/stats | jq -r '
+curl -s http://localhost:3200/api/stats | jq -r '
     "Total Storage: " + (.total_gb | tostring) + " GB" + "\n" +
     "Used Storage: " + (.used_gb | tostring) + " GB" + "\n" +
     "Stored Files: " + (.shard_count | tostring) + "\n" +
@@ -143,9 +143,9 @@ echo "   • Real file deletion"
 echo "   • Real API endpoints"
 echo ""
 echo "🌐 Access the real P2P client at:"
-echo "   http://localhost:3000/real-functional-client.html"
+echo "   http://localhost:3100/real-functional-client.html"
 echo ""
 echo "🔌 Real P2P API at:"
-echo "   http://localhost:3003/api/"
+echo "   http://localhost:3200/api/"
 echo ""
 echo "🚀 This is NOT fake - it's REAL P2P storage!"

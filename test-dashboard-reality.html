@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Reality Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 XMBL Dashboard Reality Test</h1>
+    <p>This test verifies that the dashboard is showing REAL data instead of hardcoded values.</p>
+
+    <div class="test-section info">
+        <h3>📡 Testing API Endpoints</h3>
+        <p>First, let's verify the P2P API is working and returning real data:</p>
+        <div id="api-test-results"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>🌐 Testing Dashboard</h3>
+        <p>Now let's check if the dashboard is actually loading and showing real data:</p>
+        <div id="dashboard-test-results"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>🎯 Expected vs Actual Results</h3>
+        <p>Comparing what should be shown vs what's actually displayed:</p>
+        <div id="comparison-results"></div>
+    </div>
+
+    <script>
+        async function testAPIs() {
+            const resultsDiv = document.getElementById('api-test-results');
+            resultsDiv.innerHTML = '<p>Testing APIs...</p>';
+
+            try {
+                // Test P2P Network API
+                const networkResponse = await fetch('http://localhost:3200/api/network/status');
+                const networkData = await networkResponse.json();
+                
+                // Test Storage API
+                const storageResponse = await fetch('http://localhost:3200/api/stats');
+                const storageData = await storageResponse.json();
+
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ API Tests PASSED</h4>
+                        <p><strong>P2P Network API:</strong></p>
+                        <pre>${JSON.stringify(networkData, null, 2)}</pre>
+                        <p><strong>Storage API:</strong></p>
+                        <pre>${JSON.stringify(storageData, null, 2)}</pre>
+                    </div>
+                `;
+
+                // Store data for comparison
+                window.apiData = { network: networkData, storage: storageData };
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ API Tests FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testDashboard() {
+            const resultsDiv = document.getElementById('dashboard-test-results');
+            resultsDiv.innerHTML = '<p>Testing dashboard...</p>';
+
+            try {
+                // Test if dashboard is accessible
+                const dashboardResponse = await fetch('http://localhost:3100');
+                const dashboardHTML = await dashboardResponse.text();
+                
+                if (dashboardHTML.includes('XMBL Network Web Dashboard')) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Dashboard Access PASSED</h4>
+                            <p>Dashboard is accessible at http://localhost:3100</p>
+                            <p>HTML contains: "XMBL Network Web Dashboard"</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Dashboard Access FAILED</h4>
+                            <p>Dashboard HTML doesn't contain expected content</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Dashboard Test FAILED</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showComparison() {
+            if (!window.apiData) {
+                document.getElementById('comparison-results').innerHTML = '<p>Run API tests first...</p>';
+                return;
+            }
+
+            const { network, storage } = window.apiData;
+            const resultsDiv = document.getElementById('comparison-results');
+
+            const expectedData = {
+                totalNodes: network.total_nodes,
+                onlineNodes: network.online_nodes,
+                networkStatus: network.network_status,
+                p2pSwarm: network.p2p_swarm,
+                storageUsed: storage.used_gb,
+                storageTotal: storage.total_gb,
+                storedFiles: storage.shard_count
+            };
+
+            resultsDiv.innerHTML = `
+                <div class="success">
+                    <h4>🎯 Expected Dashboard Values (REAL DATA)</h4>
+                    <p><strong>P2P Swarm Status:</strong> ${expectedData.p2pSwarm === 'active' ? '🟢 ACTIVE' : '🔴 INACTIVE'}</p>
+                    <p><strong>Total Nodes:</strong> ${expectedData.totalNodes}</p>
+                    <p><strong>Online Nodes:</strong> ${expectedData.onlineNodes}</p>
+                    <p><strong>Network Status:</strong> ${expectedData.networkStatus}</p>
+                    <p><strong>Storage Used:</strong> ${expectedData.storageUsed.toFixed(8)} GB</p>
+                    <p><strong>Storage Total:</strong> ${expectedData.storageTotal} GB</p>
+                    <p><strong>Stored Files:</strong> ${expectedData.storedFiles}</p>
+                    
+                    <h4>❌ What Dashboard Was Showing Before (HARDCODED)</h4>
+                    <p><strong>Total Nodes:</strong> 10 (fake)</p>
+                    <p><strong>Online Nodes:</strong> 10 (fake)</p>
+                    <p><strong>Storage Used:</strong> 500 GB (fake)</p>
+                    <p><strong>Storage Total:</strong> 1000 GB (fake)</p>
+                    <p><strong>Success Rate:</strong> 98.5% (fake)</p>
+                    <p><strong>CPU Usage:</strong> 25% (fake)</p>
+                    <p><strong>Memory Usage:</strong> 45% (fake)</p>
+                    
+                    <h4>🎉 CONCLUSION</h4>
+                    <p>If the dashboard now shows the REAL values above instead of the hardcoded fake values, then the fix is working!</p>
+                    <p>Open http://localhost:3100 to verify the dashboard is showing real data.</p>
+                </div>
+            `;
+        }
+
+        // Run tests when page loads
+        window.onload = function() {
+            testAPIs();
+            testDashboard();
+            setTimeout(showComparison, 2000);
+        };
+
+        // Manual test buttons
+        function runAllTests() {
+            testAPIs();
+            testDashboard();
+            setTimeout(showComparison, 2000);
+        }
+    </script>
+
+    <div class="test-section">
+        <h3>🔄 Manual Test Controls</h3>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="testAPIs()">Test APIs Only</button>
+        <button onclick="testDashboard()">Test Dashboard Only</button>
+        <button onclick="showComparison()">Show Comparison</button>
+    </div>
+
+    <div class="test-section">
+        <h3>📋 Test Instructions</h3>
+        <ol>
+            <li>Run the tests above to verify APIs are working</li>
+            <li>Open http://localhost:3100 in a new tab</li>
+            <li>Compare the dashboard values with the expected values above</li>
+            <li>If they match, the fix is working!</li>
+            <li>If they don't match, the dashboard is still showing fake data</li>
+        </ol>
+    </div>
+</body>
+</html>
+

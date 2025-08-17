@@ -59,7 +59,7 @@ impl CliService {
     pub fn new(node_id: String) -> Self {
         CliService { 
             node_id,
-            api_url: "http://localhost:3003".to_string()
+            api_url: "http://localhost:3200".to_string()
         }
     }
     

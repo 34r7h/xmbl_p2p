@@ -17,24 +17,34 @@ echo ""
 # Start P2P nodes
 echo "🌐 Starting P2P nodes..."
 
-echo "1️⃣ Starting Node 1 (port 3001)..."
-cargo run -p xmbl_p2p_node -- node_001 3001 100 &
+echo "1️⃣ Starting Node 1 (port 3010)..."
+cargo run -p xmbl_p2p_node -- node_001 3010 100 &
 NODE1_PID=$!
 sleep 2
 
-echo "2️⃣ Starting Node 2 (port 3002)..."
-cargo run -p xmbl_p2p_node -- node_002 3002 150 &
+echo "2️⃣ Starting Node 2 (port 3011)..."
+cargo run -p xmbl_p2p_node -- node_002 3011 150 &
 NODE2_PID=$!
 sleep 2
 
-echo "3️⃣ Starting Node 3 (port 3003)..."
-cargo run -p xmbl_p2p_node -- node_003 3003 200 &
+echo "3️⃣ Starting Node 3 (port 3012)..."
+cargo run -p xmbl_p2p_node -- node_003 3012 200 &
 NODE3_PID=$!
 sleep 2
 
-echo "4️⃣ Starting Node 4 (port 3004)..."
-cargo run -p xmbl_p2p_node -- node_004 3004 250 &
+echo "4️⃣ Starting Node 4 (port 3013)..."
+cargo run -p xmbl_p2p_node -- node_004 3013 250 &
 NODE4_PID=$!
+sleep 2
+
+echo "5️⃣ Starting Node 5 (port 3014)..."
+cargo run -p xmbl_p2p_node -- node_005 3014 300 &
+NODE5_PID=$!
+sleep 2
+
+echo "6️⃣ Starting Node 6 (port 3015)..."
+cargo run -p xmbl_p2p_node -- node_006 3015 350 &
+NODE6_PID=$!
 sleep 2
 
 echo ""
@@ -51,36 +61,50 @@ echo "======================"
 
 # Check if nodes are running
 if ps -p $NODE1_PID > /dev/null; then
-    echo "✅ Node 1 (node_001) - Port 3001 - PID: $NODE1_PID"
+    echo "✅ Node 1 (node_001) - Port 3010 - PID: $NODE1_PID"
 else
     echo "❌ Node 1 failed to start"
 fi
 
 if ps -p $NODE2_PID > /dev/null; then
-    echo "✅ Node 2 (node_002) - Port 3002 - PID: $NODE2_PID"
+    echo "✅ Node 2 (node_002) - Port 3011 - PID: $NODE2_PID"
 else
     echo "❌ Node 2 failed to start"
 fi
 
 if ps -p $NODE3_PID > /dev/null; then
-    echo "✅ Node 3 (node_003) - Port 3003 - PID: $NODE3_PID"
+    echo "✅ Node 3 (node_003) - Port 3012 - PID: $NODE3_PID"
 else
     echo "❌ Node 3 failed to start"
 fi
 
 if ps -p $NODE4_PID > /dev/null; then
-    echo "✅ Node 4 (node_004) - Port 3004 - PID: $NODE4_PID"
+    echo "✅ Node 4 (node_004) - Port 3013 - PID: $NODE4_PID"
 else
     echo "❌ Node 4 failed to start"
+fi
+
+if ps -p $NODE5_PID > /dev/null; then
+    echo "✅ Node 5 (node_005) - Port 3014 - PID: $NODE5_PID"
+else
+    echo "❌ Node 5 failed to start"
+fi
+
+if ps -p $NODE6_PID > /dev/null; then
+    echo "✅ Node 6 (node_006) - Port 3015 - PID: $NODE6_PID"
+else
+    echo "❌ Node 6 failed to start"
 fi
 
 echo ""
 echo "🔗 Network Ports:"
 echo "================="
-echo "Node 1: http://localhost:3001"
-echo "Node 2: http://localhost:3002"
-echo "Node 3: http://localhost:3003"
-echo "Node 4: http://localhost:3004"
+echo "Node 1: http://localhost:3010"
+echo "Node 2: http://localhost:3011"
+echo "Node 3: http://localhost:3012"
+echo "Node 4: http://localhost:3013"
+echo "Node 5: http://localhost:3014"
+echo "Node 6: http://localhost:3015"
 echo ""
 
 echo "📱 P2P Client: http://localhost:3000/p2p-client.html"

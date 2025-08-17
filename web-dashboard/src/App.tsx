@@ -24,7 +24,7 @@ function App() {
   const checkSystemStatus = async () => {
     try {
       // Check monitoring service
-      const monitoringResponse = await fetch('http://localhost:3001/health');
+      const monitoringResponse = await fetch('http://localhost:3005/health');
       setSystemStatus(prev => ({
         ...prev,
         monitoring: monitoringResponse.ok ? 'healthy' : 'unhealthy'
@@ -38,7 +38,7 @@ function App() {
 
     try {
       // Check dashboard
-      const dashboardResponse = await fetch('http://localhost:3000');
+      const dashboardResponse = await fetch('http://localhost:3100');
       setSystemStatus(prev => ({
         ...prev,
         dashboard: dashboardResponse.ok ? 'healthy' : 'unhealthy'

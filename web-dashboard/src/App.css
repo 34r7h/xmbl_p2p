@@ -611,3 +611,62 @@ html {
     border: 1px solid #ccc;
   }
 }
+
+/* P2P Swarm Activity Indicators */
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4CAF50;
+  margin-right: 8px;
+  animation: pulse 2s infinite;
+}
+
+/* Enhanced P2P status indicators */
+.status-indicator.status-online {
+  background: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.status-indicator.status-offline {
+  background: #F44336;
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
+}
+
+.status-indicator.status-warning {
+  background: #FF9800;
+  box-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
+}
+
+/* Alert styles */
+.alert {
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.alert.info {
+  background-color: #e3f2fd;
+  border-color: #2196F3;
+  color: #0d47a1;
+}
+
+.alert.success {
+  background-color: #e8f5e8;
+  border-color: #4CAF50;
+  color: #1b5e20;
+}
+
+.alert.warning {
+  background-color: #fff3e0;
+  border-color: #FF9800;
+  color: #e65100;
+}
+
+.alert.error {
+  background-color: #ffebee;
+  border-color: #F44336;
+  color: #b71c1c;
+}
